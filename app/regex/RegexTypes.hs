@@ -1,4 +1,4 @@
-module RegularExpressions where
+module RegexTypes where
 import AutomatonTypes (NFA(..), TransicaoNFA (..), Simbolo)
 import qualified Data.Set as Set
 
@@ -123,71 +123,3 @@ buildAux (Star r) i =
     let (nfa1, i1) = buildAux r i
     in regexStar nfa1 i1
 buildAux Epsilon i = regexEpsilon i
-
--- | PARSER: converte String -> Reg (árvore sintática).
---
--- Cada função retorna (Reg, sobra) onde "sobra" é o resto não processado.
--- Isso permite que cada nível "coma" só o que lhe pertence e devolva
--- o resto para o nível acima.
---
--- Gramática (precedência crescente):
---   regex   → term ('|' term)*      (Or  — menor precedência)
---   term    → factor+                (Then — concatenação implícita)
---   factor  → primary ('*' | '+' | '?')?           (Star — maior precedência)
---   primary → char | '(' regex ')'   (Literal ou grupo)
-
--- | Ponto de entrada
-parse :: String -> Reg
-parse "" = Epsilon
-parse s = reg
-    where (reg, _) = parseRegex s
-
--- | regex   → term ('|' term)*
--- Parseia um term, depois vê se vem '|' e mais um regex
-parseRegex :: String -> (Reg, String)
-parseRegex s = (regAposPipe, restoFinal)
-    where
-        (reg, resto) = parseTerm s
-        (regAposPipe, restoFinal) = aposPipe reg resto
-
--- | aposPipe: depois de um term, se vier '|', parseia o próximo regex
-aposPipe :: Reg -> String -> (Reg, String)
-aposPipe r ('|' : s) = (Or r r2, rest2)
-    where (r2, rest2) = parseRegex s
-aposPipe r s = (r, s)
-
--- | term   → factor+
--- Parseia o máximo de fatores em sequência e junta com Then
-parseTerm :: String -> (Reg, String)
-parseTerm s = combinaFatores (parseFactors s)
-    where
-        combinaFatores ([], resto)   = (Epsilon, resto)
-        combinaFatores (rs, resto)   = (foldl1 Then rs, resto)
-
--- | parseFactors: lê o máximo de fatores em sequência
-parseFactors :: String -> ([Reg], String)
-parseFactors ""           = ([], "")
-parseFactors ('|' : s)    = ([], '|' : s)
-parseFactors (')' : s)    = ([], ')' : s)
-parseFactors s            = (r : rs, resto2)
-    where
-        (r, resto1) = parseFactor s
-        (rs, resto2) = parseFactors resto1
-
--- | factor  → primary '*'?
--- Parseia um átomo (literal ou grupo) e, se vier '*', aplica Star
-parseFactor :: String -> (Reg, String)
-parseFactor ('(' : s) = fechaParen (parseRegex s)
-    where
-        fechaParen (r, ')':resto')  = aplicaPosfixo r resto'
-        fechaParen _                = error "Parse error: parêntese não fechado"
-        aplicaPosfixo r ('?':resto) = (Or r Epsilon, resto)
-        aplicaPosfixo r ('*':resto) = (Star r, resto)
-        aplicaPosfixo r ('+':resto) = (Then r (Star r), resto)
-        aplicaPosfixo r resto       = (r, resto)
-parseFactor (c : '?' : s) = (Or (Literal c) Epsilon, s)
-parseFactor (c : '*' : s) = (Star (Literal c), s)
-parseFactor (c : '+' : s) = (Then (Literal c) (Star (Literal c)), s)
-parseFactor [c]           = (Literal c, "")
-parseFactor (c : s)       = (Literal c, s)
-parseFactor []            = error "Parse error: fim de entrada inesperado"

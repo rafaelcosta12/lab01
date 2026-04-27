@@ -14,7 +14,9 @@ common warnings
 library
     import:           warnings
     exposed-modules:  AutomatonTypes
-                      Operations
+                      Conversion
+                      Display
+                      Acceptance
     hs-source-dirs:   src
     build-depends:    base >=4.18.3.0 && <4.19,
                       containers ^>=0.6.7
@@ -37,7 +39,8 @@ executable converter
 executable regex
     import:           warnings
     main-is:          Main.hs
-    other-modules:    RegularExpressions
+    other-modules:    RegexTypes
+                      RegexParser
     hs-source-dirs:   app/regex
     build-depends:    lab01,
                       base >=4.18.3.0 && <4.19,

@@ -3,7 +3,9 @@ module Main where
 import AutomatonTypes (DFA)
 import ParseYAML (readYAMLFile, AutomatoDef (autType), toNFAE, toNFA, toDFA, automatoDefToFile, dfaToAutomatoDef)
 import Data.Text (unpack)
-import Operations (nfaeParaNfa, nfaParaDfa, mostrarNFA, mostrarDFA, aceitarDFA)
+import Conversion (nfaeParaNfa, nfaParaDfa)
+import Display (mostrarNFA, mostrarDFA)
+import Acceptance (aceitarDFA)
 import System.Environment (getArgs)
 
 main :: IO ()

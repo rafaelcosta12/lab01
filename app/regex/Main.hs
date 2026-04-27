@@ -1,6 +1,9 @@
 module Main where
-import RegularExpressions (parse, build)
-import Operations (mostrarNFA, nfaParaDfa, aceitarDFA)
+import RegexParser (parse)
+import RegexTypes (build)
+import Display (mostrarNFA)
+import Conversion (nfaParaDfa)
+import Acceptance (aceitarDFA)
 import System.Environment (getArgs)
 
 main :: IO ()
