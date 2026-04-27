@@ -133,7 +133,7 @@ buildAux Epsilon i = regexEpsilon i
 -- Gramática (precedência crescente):
 --   regex   → term ('|' term)*      (Or  — menor precedência)
 --   term    → factor+                (Then — concatenação implícita)
---   factor  → primary '*'?           (Star — maior precedência)
+--   factor  → primary ('*' | '+' | '?')?           (Star — maior precedência)
 --   primary → char | '(' regex ')'   (Literal ou grupo)
 
 -- | Ponto de entrada
@@ -179,11 +179,15 @@ parseFactors s            = (r : rs, resto2)
 parseFactor :: String -> (Reg, String)
 parseFactor ('(' : s) = fechaParen (parseRegex s)
     where
-        fechaParen (r, ')':resto')  = aplicaEstrela r resto'
+        fechaParen (r, ')':resto')  = aplicaPosfixo r resto'
         fechaParen _                = error "Parse error: parêntese não fechado"
-        aplicaEstrela r ('*':resto) = (Star r, resto)
-        aplicaEstrela r resto       = (r, resto)
+        aplicaPosfixo r ('?':resto) = (Or r Epsilon, resto)
+        aplicaPosfixo r ('*':resto) = (Star r, resto)
+        aplicaPosfixo r ('+':resto) = (Then r (Star r), resto)
+        aplicaPosfixo r resto       = (r, resto)
+parseFactor (c : '?' : s) = (Or (Literal c) Epsilon, s)
 parseFactor (c : '*' : s) = (Star (Literal c), s)
+parseFactor (c : '+' : s) = (Then (Literal c) (Star (Literal c)), s)
 parseFactor [c]           = (Literal c, "")
 parseFactor (c : s)       = (Literal c, s)
 parseFactor []            = error "Parse error: fim de entrada inesperado"
