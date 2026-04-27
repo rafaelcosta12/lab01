@@ -65,7 +65,6 @@ instance ToJSON AutomatoDef where
                , "transitions" .= transitions
                ]
 
-
 parseTextFieldArray :: Value -> Parser [T.Text]
 parseTextFieldArray (Array arr) = mapM valueToText (V.toList arr)
 parseTextFieldArray _           = fail "expected array"

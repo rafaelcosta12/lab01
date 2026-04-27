@@ -96,7 +96,7 @@ build (Literal c) = regexSingle (show c)
 build (Or r1 r2) = regexUnion (build r1) (build r2)
 build (Then r1 r2) = regexConcat (build r1) (build r2)
 build (Star r) = regexStar (build r)
-build Epsilon = NFA [] [] [] "0" (Set.singleton "0")
+build Epsilon = NFA { nfaAlfabeto = [], nfaEstados = [], nfaTransicoes = [], nfaInicial = "0", nfaFinais = Set.singleton "0" }
 
 -- | PARSER: converte String -> Reg (árvore sintática).
 --
@@ -161,4 +161,3 @@ parseFactor (c : '*' : s) = (Star (Literal c), s)
 parseFactor [c]           = (Literal c, "")
 parseFactor (c : s)       = (Literal c, s)
 parseFactor []            = error "Parse error: fim de entrada inesperado"
-

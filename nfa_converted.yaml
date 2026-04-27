@@ -1,0 +1,26 @@
+alphabet:
+- '0.0'
+- '1.0'
+- epsilon
+final_states:
+- q2
+initial_state: q0
+states:
+- q0
+- q1
+- q2
+transitions:
+- from: q0
+  symbol: '0.0'
+  to:
+  - q0
+  - q1
+- from: q0
+  symbol: '1.0'
+  to:
+  - q2
+- from: q1
+  symbol: '1.0'
+  to:
+  - q2
+type: nfae
