@@ -1,4 +1,5 @@
 module Main where
+
 import RegexParser (parse)
 import RegexTypes (build)
 import Display (mostrarNFA)
@@ -10,19 +11,24 @@ main :: IO ()
 main = do
     args <- getArgs
     case args of
-        [regexStr] -> do
-            let reg = parse regexStr
-            putStrLn $ "Regex: " ++ regexStr
-            putStrLn $ "Árvore sintática: " ++ show reg
-            let nfa = build reg
-            mostrarNFA nfa
+        [regexStr] ->
+            showNFAS regexStr
+
         [regexStr, testStr] -> do
-            let reg = parse regexStr
-            let nfa = build reg
+            showNFAS regexStr
+            let nfa = build (parse regexStr)
             let dfa = nfaParaDfa nfa
             let symbols = [[c] | c <- testStr]
             let result = aceitarDFA dfa symbols
-            mostrarNFA nfa
-            putStrLn $ "String: " ++ testStr
+            putStrLn $ "String: \"" ++ testStr ++ "\""
             putStrLn $ "Resultado: " ++ if result then "ACEITA" else "REJEITA"
+
         _ -> error "Usage: regex <regex_pattern> [<test_string>]"
+
+showNFAS :: String -> IO ()
+showNFAS regexStr = do
+    let reg = parse regexStr
+    let nfa = build reg
+    putStrLn $ "Regex: " ++ regexStr
+    putStrLn $ "Arvore sintatica: " ++ show reg
+    mostrarNFA nfa

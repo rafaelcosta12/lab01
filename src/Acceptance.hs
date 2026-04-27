@@ -1,4 +1,5 @@
 module Acceptance where
+
 import qualified Data.Set as Set
 import AutomatonTypes
 
@@ -18,10 +19,14 @@ aceitarDFAAux :: [TransicaoDFA] -> [Set.Set Estado] -> Set.Set Estado -> [Simbol
 aceitarDFAAux _ finais estadoAtual [] =
     estadoAtual `elem` finais
 
-aceitarDFAAux transicoes finais estadoAtual (simbolo:resto) =
+aceitarDFAAux transicoes finais estadoAtual (simbolo : resto) =
     case lookupTransicao transicoes estadoAtual simbolo of
         Nothing -> False
         Just proxEstado -> aceitarDFAAux transicoes finais proxEstado resto
 
 aceitarDFA :: DFA -> [Simbolo] -> Bool
-aceitarDFA DFA { dfaTransicoes = transicoes, dfaInicial = inicial, dfaFinais = finais } = aceitarDFAAux transicoes finais inicial
+aceitarDFA DFA { dfaTransicoes = transicoes
+               , dfaInicial = inicial
+               , dfaFinais = finais
+               } =
+    aceitarDFAAux transicoes finais inicial

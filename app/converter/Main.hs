@@ -1,7 +1,8 @@
 module Main where
 
 import AutomatonTypes (DFA)
-import ParseYAML (readYAMLFile, AutomatoDef (autType), toNFAE, toNFA, toDFA, automatoDefToFile, dfaToAutomatoDef)
+import ParseYAML (readYAMLFile, AutomatoDef(autType), toNFAE, toNFA, toDFA
+                 , automatoDefToFile, dfaToAutomatoDef)
 import Data.Text (unpack)
 import Conversion (nfaeParaNfa, nfaParaDfa)
 import Display (mostrarNFA, mostrarDFA)
@@ -12,28 +13,30 @@ main :: IO ()
 main = do
     args <- getArgs
     case args of
-        [filePath] -> run filePath Nothing
-        [filePath, testStr] -> run filePath (Just testStr)
-        _ -> error "Usage: converter <path_to_yaml_file> [<test_string>]"
+        [filePath]       -> run filePath Nothing
+        [filePath, str]  -> run filePath (Just str)
+        _                -> error "Usage: converter <path_to_yaml_file> [<test_string>]"
 
 run :: FilePath -> Maybe String -> IO ()
 run filePath mTestStr = do
     automatoDef <- readYAMLFile filePath
     case unpack (autType automatoDef) of
-        "nfa" -> runNfa automatoDef mTestStr
+        "nfa"  -> runNfa automatoDef mTestStr
         "nfae" -> runNfae automatoDef mTestStr
-        "dfa" -> runDfa automatoDef mTestStr
-        _ -> putStrLn "Tipo de autômato desconhecido!"
+        "dfa"  -> runDfa automatoDef mTestStr
+        _      -> putStrLn "Tipo de automato desconhecido!"
 
 runNfae :: AutomatoDef -> Maybe String -> IO ()
 runNfae automatoDef mTestStr = do
     let nfae = toNFAE automatoDef
     mostrarNFA nfae
+
     let nfa = nfaeParaNfa nfae
-    print "----- Conversão de NFAE para NFA concluida! -----"
+    print "----- Conversao de NFAE para NFA concluida! -----"
     mostrarNFA nfa
+
     let dfa = nfaParaDfa nfa
-    print "----- Conversão de NFA para DFA concluida! -----"
+    print "----- Conversao de NFA para DFA concluida! -----"
     mostrarDFA dfa
     automatoDefToFile (dfaToAutomatoDef dfa) "dfa_converted.yaml"
     maybeTest dfa mTestStr
@@ -42,8 +45,9 @@ runNfa :: AutomatoDef -> Maybe String -> IO ()
 runNfa automatoDef mTestStr = do
     let nfa = toNFA automatoDef
     mostrarNFA nfa
+
     let dfa = nfaParaDfa nfa
-    print "----- Conversão de NFA para DFA concluida! -----"
+    print "----- Conversao de NFA para DFA concluida! -----"
     mostrarDFA dfa
     automatoDefToFile (dfaToAutomatoDef dfa) "dfa_converted.yaml"
     maybeTest dfa mTestStr

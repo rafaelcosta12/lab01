@@ -1,4 +1,5 @@
 module Display where
+
 import qualified Data.Set as Set
 import AutomatonTypes
 
@@ -6,26 +7,26 @@ mostrarConjunto :: Set.Set String -> String
 mostrarConjunto s = case Set.toList s of
     [] -> "{}"
     [x] -> "{" ++ x ++ "}"
-    (x:xs) -> "{" ++ x ++ juntar xs
+    (x : xs) -> "{" ++ x ++ juntar xs
     where
         juntar [] = "}"
         juntar [y] = ", " ++ y ++ "}"
-        juntar (y:ys) = ", " ++ y ++ juntar ys
+        juntar (y : ys) = ", " ++ y ++ juntar ys
 
 mostrarTransicaoDFA :: TransicaoDFA -> String
 mostrarTransicaoDFA TransicaoDFA { tDFAOrigem = origem
-                                , tDFASimbolo = simbolo
-                                , tDFADestino = destino
-                                } =
+                                 , tDFASimbolo = simbolo
+                                 , tDFADestino = destino
+                                 } =
     mostrarConjunto origem ++ " --" ++ simbolo ++ "--> " ++ mostrarConjunto destino
 
 mostrarDFA :: DFA -> IO ()
 mostrarDFA DFA { dfaAlfabeto = alfabeto
-              , dfaEstados = estados
-              , dfaTransicoes = transicoes
-              , dfaInicial = inicial
-              , dfaFinais = finais
-              } = do
+               , dfaEstados = estados
+               , dfaTransicoes = transicoes
+               , dfaInicial = inicial
+               , dfaFinais = finais
+               } = do
     putStrLn $ "Alfabeto: " ++ show alfabeto
     putStrLn "Estados do DFA (cada um é um conjunto de estados do NFA):"
     mapM_ (\e -> putStrLn $ "  " ++ mostrarConjunto e) estados
@@ -40,11 +41,11 @@ mostrarDFA DFA { dfaAlfabeto = alfabeto
 
 mostrarNFA :: NFA -> IO ()
 mostrarNFA NFA { nfaAlfabeto = alfabeto
-              , nfaEstados = estados
-              , nfaTransicoes = transicoes
-              , nfaInicial = inicial
-              , nfaFinais = finais
-              } = do
+               , nfaEstados = estados
+               , nfaTransicoes = transicoes
+               , nfaInicial = inicial
+               , nfaFinais = finais
+               } = do
     putStrLn ""
     putStrLn $ "Alfabeto: " ++ show alfabeto
     putStrLn $ "Estados: " ++ show estados
