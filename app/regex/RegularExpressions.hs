@@ -2,52 +2,55 @@ module RegularExpressions where
 import AutomatonTypes (NFA(..), TransicaoNFA (..), Simbolo)
 import qualified Data.Set as Set
 
-regexConcat :: NFA -> NFA -> NFA
-regexConcat nfa1 nfa2 = NFA {
+getStateName :: Int -> String
+getStateName i = "q" ++ show i
+
+regexConcat :: NFA -> NFA -> Int -> (NFA, Int)
+regexConcat nfa1 nfa2 i = (NFA {
     nfaAlfabeto   = Set.toList (Set.fromList (nfaAlfabeto nfa1 ++ nfaAlfabeto nfa2)),
     nfaEstados    = Set.toList (Set.union (Set.fromList (nfaEstados nfa1)) (Set.fromList (nfaEstados nfa2))),
     nfaTransicoes = nfaTransicoes nfa1 ++ nfaTransicoes nfa2 ++ novasTransicoes,
     nfaInicial    = nfaInicial nfa1,
-    nfaFinais     = nfaFinais nfa2 }
+    nfaFinais     = nfaFinais nfa2 }, i)
     where novasTransicoes = [ TransicaoNFA {
         tNFAOrigem = estadoFinal,
         tNFASimbolo = "epsilon",
         tNFADestinos = Set.singleton (nfaInicial nfa2)
     } | estadoFinal <- Set.toList (nfaFinais nfa1)]
 
-regexUnion :: NFA -> NFA -> NFA
-regexUnion nfa1 nfa2 = NFA {
+regexUnion :: NFA -> NFA -> Int -> (NFA, Int)
+regexUnion nfa1 nfa2 i = (NFA {
     nfaAlfabeto   = Set.toList (Set.fromList (nfaAlfabeto nfa1 ++ nfaAlfabeto nfa2)),
     nfaEstados    = Set.toList (Set.union (Set.fromList (nfaEstados nfa1)) (Set.fromList (nfaEstados nfa2))) ++ novosEstados,
     nfaTransicoes = nfaTransicoes nfa1 ++ nfaTransicoes nfa2 ++ novasTransicoes,
     nfaInicial = estado1,
-    nfaFinais = Set.singleton estado2 }
+    nfaFinais = Set.singleton estado2 }, i + 2)
     where
-        estado1 = "+" ++ nfaInicial nfa1 ++ nfaInicial nfa2
-        estado2 = nfaInicial nfa1 ++ nfaInicial nfa2 ++ "+"
+        estado1 = getStateName i
+        estado2 = getStateName (i + 1)
         novosEstados = [estado1, estado2]
         transicoesDoInicio = [TransicaoNFA {
                                 tNFAOrigem = estado1,
                                 tNFASimbolo = "epsilon",
-                                tNFADestinos = Set.singleton i
-                            } | i <- [nfaInicial nfa1, nfaInicial nfa2]]
+                                tNFADestinos = Set.singleton x
+                            } | x <- [nfaInicial nfa1, nfaInicial nfa2]]
         transicoesDoFinal = [TransicaoNFA {
-                                tNFAOrigem = i,
+                                tNFAOrigem = x,
                                 tNFASimbolo = "epsilon",
                                 tNFADestinos = Set.singleton estado2
-                            } | i <- Set.toList (Set.union (nfaFinais nfa1) (nfaFinais nfa2))]
+                            } | x <- Set.toList (Set.union (nfaFinais nfa1) (nfaFinais nfa2))]
         novasTransicoes = transicoesDoInicio ++ transicoesDoFinal
 
-regexStar :: NFA -> NFA
-regexStar nfa = NFA {
+regexStar :: NFA -> Int -> (NFA, Int)
+regexStar nfa i = (NFA {
     nfaAlfabeto   = nfaAlfabeto nfa,
     nfaEstados    = nfaEstados nfa ++ novosEstados,
     nfaTransicoes = nfaTransicoes nfa ++ novasTransicoes,
     nfaInicial = estadoInicial,
-    nfaFinais = Set.singleton estadoFinal }
+    nfaFinais = Set.singleton estadoFinal }, i + 2)
     where
-        estadoInicial = "*" ++ nfaInicial nfa
-        estadoFinal = concat (Set.toList (nfaFinais nfa)) ++ "*"
+        estadoInicial = getStateName i
+        estadoFinal = getStateName (i + 1)
         novosEstados = [estadoInicial, estadoFinal]
         transicao1 = TransicaoNFA {
             tNFAOrigem = estadoInicial,
@@ -67,22 +70,32 @@ regexStar nfa = NFA {
             tNFADestinos = Set.singleton (nfaInicial nfa) } | f <- Set.toList (nfaFinais nfa)]
         novasTransicoes = [transicao1, transicao2] ++ transicao3 ++ transicao4
 
-regexSingle :: Simbolo -> NFA
-regexSingle simbolo = NFA {
+regexSingle :: Simbolo -> Int -> (NFA, Int)
+regexSingle simbolo i = (NFA {
     nfaAlfabeto = [simbolo],
     nfaEstados = estados,
     nfaTransicoes = transicoes,
     nfaInicial = estado1,
-    nfaFinais = Set.singleton estado2 }
+    nfaFinais = Set.singleton estado2 }, i + 2)
     where
-        estado1 = simbolo ++ "0"
-        estado2 = simbolo ++ "1"
+        estado1 = getStateName i
+        estado2 = getStateName (i + 1)
         estados = [estado1, estado2]
         transicao1 = TransicaoNFA {
             tNFAOrigem = estado1,
             tNFASimbolo = simbolo,
             tNFADestinos = Set.singleton estado2 }
         transicoes = [transicao1]
+
+regexEpsilon :: Int -> (NFA, Int)
+regexEpsilon i = (NFA { 
+    nfaAlfabeto = [], 
+    nfaEstados = [novoEstado], 
+    nfaTransicoes = [], 
+    nfaInicial = novoEstado, 
+    nfaFinais = Set.singleton novoEstado }, i + 1)
+    where 
+        novoEstado = getStateName i
 
 data Reg = Epsilon |
            Literal Char |
@@ -92,11 +105,24 @@ data Reg = Epsilon |
            deriving (Eq, Show)
 
 build :: Reg -> NFA
-build (Literal c) = regexSingle (show c)
-build (Or r1 r2) = regexUnion (build r1) (build r2)
-build (Then r1 r2) = regexConcat (build r1) (build r2)
-build (Star r) = regexStar (build r)
-build Epsilon = NFA { nfaAlfabeto = [], nfaEstados = [], nfaTransicoes = [], nfaInicial = "0", nfaFinais = Set.singleton "0" }
+build r = 
+    let (nfa, _) = buildAux r 0
+    in nfa
+
+buildAux :: Reg -> Int -> (NFA, Int)
+buildAux (Literal c) i = regexSingle [c] i
+buildAux (Or r1 r2) i = 
+    let (nfa1, i1) = buildAux r1 i
+        (nfa2, i2) = buildAux r2 i1
+    in regexUnion nfa1 nfa2 i2
+buildAux (Then r1 r2) i = 
+    let (nfa1, i1) = buildAux r1 i
+        (nfa2, i2) = buildAux r2 i1
+    in regexConcat nfa1 nfa2 i2
+buildAux (Star r) i = 
+    let (nfa1, i1) = buildAux r i
+    in regexStar nfa1 i1
+buildAux Epsilon i = regexEpsilon i
 
 -- | PARSER: converte String -> Reg (árvore sintática).
 --
