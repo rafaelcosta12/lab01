@@ -1,7 +1,6 @@
 module Main where
-
 import RegularExpressions (parse, build)
-import Operations (mostrarNFA)
+import Operations (mostrarNFA, nfaParaDfa, aceitarDFA)
 import System.Environment (getArgs)
 
 main :: IO ()
@@ -14,4 +13,13 @@ main = do
             putStrLn $ "Árvore sintática: " ++ show reg
             let nfa = build reg
             mostrarNFA nfa
-        _ -> error "Usage: regex <regex_pattern>"
+        [regexStr, testStr] -> do
+            let reg = parse regexStr
+            let nfa = build reg
+            let dfa = nfaParaDfa nfa
+            let symbols = [[c] | c <- testStr]
+            let result = aceitarDFA dfa symbols
+            mostrarNFA nfa
+            putStrLn $ "String: " ++ testStr
+            putStrLn $ "Resultado: " ++ if result then "ACEITA" else "REJEITA"
+        _ -> error "Usage: regex <regex_pattern> [<test_string>]"
