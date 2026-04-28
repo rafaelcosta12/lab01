@@ -10,7 +10,7 @@
     in {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
-          haskell.compiler.ghc967
+          haskell.compiler.ghc96
           cabal-install
           libyaml
         ];

@@ -43,6 +43,6 @@ executable regex
                       RegexParser
     hs-source-dirs:   app/regex
     build-depends:    lab01,
-                      base >=4.18.3.0 && <4.19,
+                      base >=4.18.2.1 && <4.19,
                       containers ^>=0.6.7
     default-language: Haskell2010
