@@ -96,24 +96,3 @@ alphabet: ['0', '1']
 ```
 
 Isso acontece porque a biblioteca `aeson` converte números do YAML para o tipo `Scientific`, e `show` de um científico sempre produz `"0.0"` em vez de `"0"`. A solução é **sempre usar aspas** ao redor dos símbolos no arquivo YAML.
-
-## Atribuição de autoria
-
-### Feito por mim (Rafael Costa)
-
-| Arquivo | O que fiz |
-|---------|-----------|
-| `src/AutomatonTypes.hs` | Definição dos tipos `NFA`, `DFA`, `TransicaoNFA`, `TransicaoDFA`, `Estado`, `Simbolo` |
-| `src/Conversion.hs` | Algoritmos de conversão: `fechoEpsilon`, `nfaeParaNfa`, `nfaParaDfa`, `calcularTransicao`, `gerarEstadosDFA` |
-| `src/Acceptance.hs` | Teste de aceitação: `lookupTransicao`, `aceitarDFAAux`, `aceitarDFA` |
-| `app/regex/RegexTypes.hs` | Tipo `Reg` (árvore sintática), funções `regexConcat`, `regexUnion`, `regexStar`, `regexSingle`, `regexEpsilon`, `build`, `buildAux`, gerência de nomes de estado com contador |
-| `app/converter/Main.hs` | Lógica principal do conversor (leitura de args, dispatcher por tipo, fluxo de conversão, teste de string) |
-| `app/regex/Main.hs` | Lógica principal do regex (leitura de args, parsing, construção do NFA, teste de string) |
-
-### Feito com auxílio de IA
-
-| Arquivo | O que a IA fez |
-|---------|----------------|
-| `app/converter/ParseYAML.hs` | Parsing de YAML: instâncias `FromJSON`/`ToJSON` para `AutomatoDef` e `TransitionDef`, funções `readYAMLFile`, `automatoDefToFile`, `toNFAE`, `toNFA`, `toDFA`, `nfaToAutomatoDef`, `dfaToAutomatoDef` |
-| `app/regex/RegexParser.hs` | Parser de expressões regulares (`parse`, `parseRegex`, `parseTerm`, `parseFactors`, `parseFactor`, `aposPipe`) incluindo operadores `*`, `+`, `?` |
-| `src/Display.hs` | Funções de exibição (`mostrarNFA`, `mostrarDFA`, `mostrarConjunto`, `mostrarTransicaoDFA`) |
